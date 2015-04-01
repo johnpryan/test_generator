@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:args/args.dart';
+import 'package:test_generator/test_generator.dart';
 
 void main(List<String> arguments) {
   var options = parseArgs(arguments);
@@ -20,40 +21,11 @@ void main(List<String> arguments) {
 
   File generatedRunner = new File(options.testDirectory + '/generated_runner_test.dart');
   IOSink writer = generatedRunner.openWrite(mode: FileMode.WRITE);
-  var header = '''
-/************ GENERATED FILE ************
-
-This file was generated with test_runner_generator
-
-************* GENERATED FILE ************/
-''';
-  writer.write(header);
-  testFiles.forEach((File file) {
-    Match fileNameMatch = new RegExp(r'([^/]+).dart$').firstMatch(file.path);
-    String fileName = fileNameMatch.group(1);
-    var fullFilePath = file.path.replaceFirst(options.testDirectory, './');
-    writer.writeln("import '$fullFilePath' as $fileName;");
-  });
-
-  writer.writeln("import 'package:unittest/unittest.dart';");
-
-  writer.writeln('void main() {');
-  testFiles.forEach((File file) {
-    Match fileNameMatch = new RegExp(r'([^/]+).dart$').firstMatch(file.path);
-    String fileName = fileNameMatch.group(1);
-    writer.writeln('  $fileName.main();');
-  });
-
-  writer.writeln('}');
+  var generator = new TestGenerator(testFiles, options);
+  generator.write(writer);
   writer.close();
 
   print('${testFiles.length.toString()} test files found');
-}
-
-class Options {
-  final String testDirectory;
-
-  Options(this.testDirectory);
 }
 
 Options parseArgs(List<String> arguments) {
@@ -65,7 +37,7 @@ Options parseArgs(List<String> arguments) {
 
   printUsage() {
     print('Usage: dart test_runner_generator.dart\n');
-    print(parser.getUsage());
+    print(parser.usage);
   }
 
   fail(message) {
