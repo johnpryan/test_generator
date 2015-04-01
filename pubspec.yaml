@@ -1,3 +1,5 @@
 name: test_generator
+executables:
+  generate_tests:
 dependencies:
   args: any

@@ -4,7 +4,7 @@ main() {
   group('bar', () {
     test('can bar', () {
       var x = 1;
-      expect(x, closeTo(0, 0));
+      expect(x, closeTo(0, 1));
     });
   });
 }
