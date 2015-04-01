@@ -20,34 +20,34 @@ void main(List<String> arguments) {
 
   File generatedRunner = new File(options.testDirectory + '/generated_runner_test.dart');
   IOSink writer = generatedRunner.openWrite(mode: FileMode.WRITE);
-  writer.writeln('/************ GENERATED FILE ************');
-  writer.writeln();
-  writer.writeln('This file was generated with test_runner_generator:');
-  writer.writeln();
-  writer.writeln('************* GENERATED FILE ************/');
-  writer.writeln();
+  var header = '''
+/************ GENERATED FILE ************
 
+This file was generated with test_runner_generator
+
+************* GENERATED FILE ************/
+''';
+  writer.write(header);
   testFiles.forEach((File file) {
     Match fileNameMatch = new RegExp(r'([^/]+).dart$').firstMatch(file.path);
     String fileName = fileNameMatch.group(1);
-    writer.writeln("import '" + file.path.replaceFirst(options.testDirectory, './') + "' as " + fileName + ';');
+    var fullFilePath = file.path.replaceFirst(options.testDirectory, './');
+    writer.writeln("import '$fullFilePath' as $fileName;");
   });
 
   writer.writeln("import 'package:unittest/unittest.dart';");
 
-  writer.writeln('');
   writer.writeln('void main() {');
-
   testFiles.forEach((File file) {
     Match fileNameMatch = new RegExp(r'([^/]+).dart$').firstMatch(file.path);
     String fileName = fileNameMatch.group(1);
-    writer.writeln('  ' + fileName + '.main();');
+    writer.writeln('  $fileName.main();');
   });
 
   writer.writeln('}');
   writer.close();
 
-  print(testFiles.length.toString() + ' test files found');
+  print('${testFiles.length.toString()} test files found');
 }
 
 class Options {
@@ -58,7 +58,7 @@ class Options {
 
 Options parseArgs(List<String> arguments) {
   var parser = new ArgParser()
-    ..addOption('directory', abbr: 'd', help: 'directory to search for tests', defaultsTo: 'test')
+    ..addOption('directory', abbr: 'd', help: 'directory to search for tests', defaultsTo: 'test/')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
   var args = parser.parse(arguments);
